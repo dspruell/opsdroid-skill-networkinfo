@@ -1,6 +1,11 @@
 from aslookup import get_as_data
 from opsdroid.matchers import match_regex
 from opsdroid.skill import Skill
+from voluptuous import Optional
+
+CONFIG_SCHEMA = {
+    Optional("service"): str,
+}
 
 DEFAULT_ASN_SERVICE = "cymru"
 
