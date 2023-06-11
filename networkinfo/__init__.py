@@ -24,7 +24,7 @@ class NetworkinfoSkill(Skill):
     #     await message.respond(as_info)
 
     @match_regex(
-        r"asn (?P<ip>(\d{1,3}\.){3}\.\d{1,3})", matching_condition="fullmatch"
+        r"asn (?P<ip>(\d{1,3}\.){3}\d{1,3})", matching_condition="fullmatch"
     )
     async def asn_lookup(self, message):
         """
