@@ -35,4 +35,4 @@ class NetworkinfoSkill(Skill):
             message.entities["ip"]["value"],
             service=self.config.get("service", DEFAULT_ASN_SERVICE),
         )
-        await message.respond(as_info)
+        await message.respond(str(as_info))
