@@ -31,8 +31,11 @@ class NetworkinfoSkill(Skill):
         Eat more phish.
 
         """
+        ip = message.entities["ip"]["value"]
         as_info = get_as_data(
-            message.entities["ip"]["value"],
+            ip,
             service=self.config.get("service", DEFAULT_ASN_SERVICE),
         )
-        await message.respond(str(as_info))
+        await message.respond(
+            f"{ip} {as_info.handle} | {as_info.cc} | {as_info.name}"
+        )
