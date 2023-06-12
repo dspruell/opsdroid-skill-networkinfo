@@ -37,5 +37,5 @@ class NetworkinfoSkill(Skill):
             service=self.config.get("service", DEFAULT_ASN_SERVICE),
         )
         await message.respond(
-            f"{ip} {as_info.handle} | {as_info.cc} | {as_info.name}"
+            f"{ip} {as_info.handle} | {as_info.cc} | {as_info.as_name}"
         )
