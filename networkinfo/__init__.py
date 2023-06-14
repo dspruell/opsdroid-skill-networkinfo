@@ -17,6 +17,11 @@ DEFAULT_ASN_SERVICE = "cymru"
 logger = logging.getLogger(__name__)
 
 
+def _monowrap(s):
+    """Wrap input string in monospace text markup."""
+    return f"```{s}```"
+
+
 class NetworkinfoSkill(Skill):
     # Needs support developed.
     #
@@ -42,7 +47,9 @@ class NetworkinfoSkill(Skill):
             service=self.config.get("service", DEFAULT_ASN_SERVICE),
         )
         await message.respond(
-            f"{ip:15} {as_info.handle} | {as_info.cc} | {as_info.as_name}"
+            _monowrap(
+                f"{ip:15} {as_info.handle} | {as_info.cc} | {as_info.as_name}"
+            )
         )
 
     # @match_regex(
@@ -92,4 +99,4 @@ class NetworkinfoSkill(Skill):
             answer = ", ".join(answer)
 
         qterm = ip or fqdn
-        await message.respond(f"{qterm}: {answer}")
+        await message.respond(_monowrap(f"{qterm}: {answer}"))
