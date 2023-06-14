@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlparse
 
 from aslookup import get_as_data
 from dns.resolver import NXDOMAIN, Resolver
@@ -75,6 +76,7 @@ class NetworkinfoSkill(Skill):
 
         try:
             if fqdn:
+                fqdn = urlparse(fqdn).hostname
                 answer = resolver.resolve(fqdn)
             elif ip:
                 answer = resolver.resolve_address(ip)
