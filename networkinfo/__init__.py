@@ -76,7 +76,8 @@ class NetworkinfoSkill(Skill):
 
         try:
             if fqdn:
-                fqdn = urlparse(fqdn).hostname
+                _parts = urlparse(fqdn)
+                fqdn = _parts.hostname
                 answer = resolver.resolve(fqdn)
             elif ip:
                 answer = resolver.resolve_address(ip)
