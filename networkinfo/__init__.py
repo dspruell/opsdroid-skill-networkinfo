@@ -71,10 +71,11 @@ class NetworkinfoSkill(Skill):
         logger.debug("Extracted matches: ip=%s, fqdn=%s", ip, fqdn)
 
         resolver = Resolver()
-        _config_resolvers = self.config.get("resolvers"):
+        _config_resolvers = self.config.get("resolvers")
         if _config_resolvers:
-            logger.debug("Using specified DNS resolvers: %s",
-                         _config_resolvers)
+            logger.debug(
+                "Using specified DNS resolvers: %s", _config_resolvers
+            )
             resolver.nameservers = _config_resolvers
 
         try:
