@@ -1,7 +1,7 @@
 import logging
-from urllib.parse import urlparse
 
 from aslookup import get_as_data
+from defang import refang
 from dns.resolver import NXDOMAIN, Resolver
 from opsdroid.matchers import match_regex
 from opsdroid.skill import Skill
@@ -80,9 +80,7 @@ class NetworkinfoSkill(Skill):
 
         try:
             if fqdn:
-                _parts = urlparse(fqdn)
-                logger.debug("Parsed FQDN results: %s", _parts)
-                fqdn = _parts.hostname
+                fqdn = refang(fqdn)
                 logger.debug("Final parsed FQDN: %s", fqdn)
                 answer = resolver.resolve(fqdn)
             elif ip:
