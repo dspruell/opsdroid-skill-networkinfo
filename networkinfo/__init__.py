@@ -67,17 +67,22 @@ class NetworkinfoSkill(Skill):
             fqdn = message.entities["fqdn"]["value"].strip().lower()
             ip = None
 
-        logger.debug("received message: %s", message)
-        logger.debug("extracted matches: ip=%s, fqdn=%s", ip, fqdn)
+        logger.debug("Received message: %s", message)
+        logger.debug("Extracted matches: ip=%s, fqdn=%s", ip, fqdn)
 
         resolver = Resolver()
-        if self.config.get("resolvers"):
-            resolver.nameservers = self.config.get("resolvers")
+        _config_resolvers = self.config.get("resolvers"):
+        if _config_resolvers:
+            logger.debug("Using specified DNS resolvers: %s",
+                         _config_resolvers)
+            resolver.nameservers = _config_resolvers
 
         try:
             if fqdn:
                 _parts = urlparse(fqdn)
+                logger.debug("Parsed FQDN results: %s", _parts)
                 fqdn = _parts.hostname
+                logger.debug("Final parsed FQDN: %s", fqdn)
                 answer = resolver.resolve(fqdn)
             elif ip:
                 answer = resolver.resolve_address(ip)
