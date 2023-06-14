@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "opsdroid-skill-networkinfo"
-version = "0.0.8"
+version = "0.0.9"
 authors = [
     { name="Darren Spruell", email="phatbuckett@gmail.com" },
 ]
@@ -12,6 +12,7 @@ description = "Network information skill for Opsdroid"
 readme = "README.md"
 dependencies = [
     "aslookup==1.5.0",
+    "dnspython==2.3.0",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

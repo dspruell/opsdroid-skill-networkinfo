@@ -1,9 +1,11 @@
 from aslookup import get_as_data
+from dns.resolver import NXDOMAIN, Resolver
 from opsdroid.matchers import match_regex
 from opsdroid.skill import Skill
 from voluptuous import Optional
 
 CONFIG_SCHEMA = {
+    Optional("resolver"): list,
     Optional("service"): str,
 }
 
@@ -27,11 +29,9 @@ class NetworkinfoSkill(Skill):
         r"asn (?P<ip>(\d{1,3}\.){3}\d{1,3})", matching_condition="fullmatch"
     )
     async def asn_lookup(self, message):
-        """
-        Eat more phish.
+        """asn - return ASN information for requested IP address"""
 
-        """
-        ip = message.entities["ip"]["value"]
+        ip = message.entities["ip"]["value"].strip()
         as_info = get_as_data(
             ip,
             service=self.config.get("service", DEFAULT_ASN_SERVICE),
@@ -39,3 +39,35 @@ class NetworkinfoSkill(Skill):
         await message.respond(
             f"{ip:15} {as_info.handle} | {as_info.cc} | {as_info.as_name}"
         )
+
+    @match_regex(
+        r"dns ((?P<ip>(\d{1,3}\.){3}\d{1,3})|(?P<fqdn>(.*)))",
+        matching_condition="fullmatch",
+    )
+    async def dns_lookup(self, message):
+        """dns - return DNS A record resolution for requested IP address"""
+
+        if message.entities.get("ip"):
+            ip = message.entities["ip"]["value"].strip()
+            fqdn = None
+        elif message.entities.get("fqdn"):
+            fqdn = message.entities["fqdn"]["value"].strip().lower()
+            ip = None
+
+        resolver = Resolver()
+        if self.config.get("resolvers"):
+            resolver.nameservers = self.config.get("resolvers")
+
+        try:
+            if fqdn:
+                answer = resolver.resolve(fqdn)
+            elif ip:
+                answer = resolver.resolve_address(ip)
+            answer = [str(addr) for addr in answer]
+        except NXDOMAIN:
+            answer = ["NXDOMAIN"]
+        finally:
+            answer = ", ".join(answer)
+
+        qterm = ip or fqdn
+        await message.respond(f"{qterm}: {answer}")
