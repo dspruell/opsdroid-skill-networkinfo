@@ -1,3 +1,5 @@
+import logging
+
 from aslookup import get_as_data
 from dns.resolver import NXDOMAIN, Resolver
 from opsdroid.matchers import match_regex
@@ -10,6 +12,8 @@ CONFIG_SCHEMA = {
 }
 
 DEFAULT_ASN_SERVICE = "cymru"
+
+logger = logging.getLogger(__name__)
 
 
 class NetworkinfoSkill(Skill):
@@ -40,8 +44,16 @@ class NetworkinfoSkill(Skill):
             f"{ip:15} {as_info.handle} | {as_info.cc} | {as_info.as_name}"
         )
 
+    # @match_regex(
+    #     r"dns ((?P<ip>(\d{1,3}\.){3}\d{1,3})|(?P<fqdn>(.*)))",
+    #     matching_condition="fullmatch",
+    # )
     @match_regex(
-        r"dns ((?P<ip>(\d{1,3}\.){3}\d{1,3})|(?P<fqdn>(.*)))",
+        r"dns\s+(?P<ip>(\d{1,3}\.){3}\d{1,3})\s*",
+        matching_condition="fullmatch",
+    )
+    @match_regex(
+        r"dns\s+(?P<fqdn>(\S+))\s*",
         matching_condition="fullmatch",
     )
     async def dns_lookup(self, message):
@@ -53,6 +65,9 @@ class NetworkinfoSkill(Skill):
         elif message.entities.get("fqdn"):
             fqdn = message.entities["fqdn"]["value"].strip().lower()
             ip = None
+
+        logger.debug("received message: %s", message)
+        logger.debug("extracted matches: ip=%s, fqdn=%s", ip, fqdn)
 
         resolver = Resolver()
         if self.config.get("resolvers"):
