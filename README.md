@@ -10,14 +10,16 @@ support numerous network object lookup tasks.
 
 ## Configuration
 
-- `resolvers`: Optional. IP address(es) of one or more resolvers to use for
-  resolving DNS queries.
+- `ipapi_key`: Optional. API key for <https://ipapi.co/> service.
+    - Default: no key, which defaults to a free account with a limited query
+      allowance.
+- `resolvers`: Optional. List of one or more IP addresses of resolvers to use
+  for resolving DNS queries.
     - Default: the local stub resolver configuration will be used.
 - `service`: Optional. Service to utilize for querying ASN information for IP
   addresses.
     - Supported values: either `cymru` or `shadowserver`.
     - Default: `cymru`
-    - Default: if omitted, the local stub resolver configuration will be used.
 
 ## Usage
 

@@ -1,5 +1,6 @@
 import logging
 
+import ipapi
 from aslookup import get_as_data
 from defang import refang
 from dns.resolver import NXDOMAIN, Resolver
@@ -13,12 +14,14 @@ CONFIG_SCHEMA = {
 }
 
 DEFAULT_ASN_SERVICE = "cymru"
+DEFAULT_IPAPI_KEY = None
 
 logger = logging.getLogger(__name__)
 
 
 def _monowrap(s):
     """Wrap input string in monospace text markup."""
+
     return f"```{s}```"
 
 
@@ -39,12 +42,13 @@ class NetworkinfoSkill(Skill):
         r"asn (?P<ip>(\d{1,3}\.){3}\d{1,3})", matching_condition="fullmatch"
     )
     async def asn_lookup(self, message):
-        """asn - return ASN information for requested IP address"""
+        """asn - Return ASN information for a requested IP address"""
 
         ip = message.entities["ip"]["value"].strip()
+        asn_service = self.config.get("service", DEFAULT_ASN_SERVICE)
         as_info = get_as_data(
             ip,
-            service=self.config.get("service", DEFAULT_ASN_SERVICE),
+            service=asn_service,
         )
         await message.respond(
             _monowrap(
@@ -65,7 +69,7 @@ class NetworkinfoSkill(Skill):
         matching_condition="fullmatch",
     )
     async def dns_lookup(self, message):
-        """dns - return DNS A record resolution for requested IP address"""
+        """dns - Return DNS resolution for a requested name or IP address"""
 
         if message.entities.get("ip"):
             ip = message.entities["ip"]["value"].strip()
@@ -100,3 +104,30 @@ class NetworkinfoSkill(Skill):
 
         qterm = ip or fqdn
         await message.respond(_monowrap(f"{qterm}: {answer}"))
+
+    @match_regex(
+        r"ip\s+(?P<ip>(\S+))\s*",
+        matching_condition="fullmatch",
+    )
+    async def ip_lookup(self, message):
+        """ip - Return geoIP information about a requested IP address"""
+
+        ip = message.entities["ip"]["value"].strip()
+        ipapi_key = self.config.get("ipapi_key", DEFAULT_IPAPI_KEY)
+
+        logger.debug("Received message: %s", message)
+        logger.debug("Extracted matches: ip=%s", ip)
+
+        ipinfo = ipapi.location(
+            ip=ip,
+            key=ipapi_key,
+            output="json",
+        )
+
+        resp = (
+            f'Location: [{ipinfo["country_code"]} {ipinfo["country"]} / '
+            f'{ipinfo["region"]} / {ipinfo["city"]}\n'
+            f'ASN:      {ipinfo["asn"]} / {ipinfo["org"]}'
+        )
+
+        await message.respond(_monowrap(f"{resp}"))

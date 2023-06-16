@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "opsdroid-skill-networkinfo"
-version = "0.0.16"
+version = "0.0.17"
 authors = [
     { name="Darren Spruell", email="phatbuckett@gmail.com" },
 ]
@@ -14,11 +14,11 @@ dependencies = [
     "aslookup==1.5.0",
     "defang==0.5.3",
     "dnspython==2.3.0",
+    "ipapi==1.0.4",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Development Status :: 1 - Planning",
-    # "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 2 - Pre-Alpha",
     # "Development Status :: 3 - Alpha",
     # "Development Status :: 4 - Beta",
     # "Development Status :: 5 - Production/Stable",
