@@ -135,7 +135,7 @@ class NetworkinfoSkill(Skill):
         await message.respond(_monowrap(f"{resp}"))
 
     @match_regex(
-        r"ipcalc\s+(?P<ip>((?:\S+|\S+ - \S+)))\s*",
+        r"ipcalc\s+(?P<ip>((?:\S+|\S+-\S+)))\s*",
         matching_condition="fullmatch",
     )
     async def ipcalc_query(self, message):
@@ -148,7 +148,11 @@ class NetworkinfoSkill(Skill):
         logger.debug("Extracted matches: ip=%s", ip)
 
         try:
-            output = run([ipcalc_cmd, ip], capture_output=True, text=True)
+            cmdargs = [ipcalc_cmd, ip]
+            # Handle address range deaggregation
+            if "-" in ip and "ipcalc-ng" in ipcalc_cmd:
+                cmdargs.insert(1, "-d")
+            output = run(cmdargs, capture_output=True, text=True)
             output = output.stdout.expandtabs()
         except FileNotFoundError as e:
             output = f"error executing command: {e}"
