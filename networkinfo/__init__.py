@@ -1,4 +1,5 @@
 import logging
+from subprocess import run
 
 import ipapi
 from aslookup import get_as_data
@@ -15,6 +16,7 @@ CONFIG_SCHEMA = {
 
 DEFAULT_ASN_SERVICE = "cymru"
 DEFAULT_IPAPI_KEY = None
+DEFAULT_IPCALC_CMD = "ipcalc-ng"
 
 logger = logging.getLogger(__name__)
 
@@ -131,3 +133,23 @@ class NetworkinfoSkill(Skill):
         )
 
         await message.respond(_monowrap(f"{resp}"))
+
+    @match_regex(
+        r"ipcalc\s+(?P<ip>((?:\S+|\S+ - \S+)))\s*",
+        matching_condition="fullmatch",
+    )
+    async def ipcalc_query(self, message):
+        """ipcalc - Return IP address subnet calculation for specified CIDR"""
+
+        ip = message.entities["ip"]["value"].strip()
+        ipcalc_cmd = self.config.get("ipcalc_cmd", DEFAULT_IPCALC_CMD)
+
+        logger.debug("Received message: %s", message)
+        logger.debug("Extracted matches: ip=%s", ip)
+
+        try:
+            output = run([ipcalc_cmd, ip], capture_output=True)
+        except FileNotFoundError as e:
+            output = f"error executing command: {e}"
+
+        await message.respond(_monowrap(f"{output}"))
