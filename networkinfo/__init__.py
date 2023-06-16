@@ -148,7 +148,7 @@ class NetworkinfoSkill(Skill):
         logger.debug("Extracted matches: ip=%s", ip)
 
         try:
-            output = run([ipcalc_cmd, ip], capture_output=True)
+            output = run([ipcalc_cmd, ip], capture_output=True, text=True)
             output = output.stdout
         except FileNotFoundError as e:
             output = f"error executing command: {e}"
