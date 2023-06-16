@@ -149,7 +149,7 @@ class NetworkinfoSkill(Skill):
 
         try:
             output = run([ipcalc_cmd, ip], capture_output=True, text=True)
-            output = output.stdout
+            output = output.stdout.expandtabs()
         except FileNotFoundError as e:
             output = f"error executing command: {e}"
 
