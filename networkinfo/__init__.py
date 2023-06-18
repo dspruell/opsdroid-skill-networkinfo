@@ -176,7 +176,8 @@ class NetworkinfoSkill(Skill):
             cmdargs = ["torsocks", "nc", "-n", "-v", "-z", "-w", "5", ip, port]
             output = run(cmdargs, capture_output=True, text=True)
             logger.debug("Command for torsocks returned output: %s", output)
-            output = output.stdout
+            # Failed connection results in output to stderr, so capture either.
+            output = output.stdout or output.stderr
         except FileNotFoundError as e:
             output = f"error executing command: {e}"
 
