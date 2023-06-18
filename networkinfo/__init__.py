@@ -175,6 +175,7 @@ class NetworkinfoSkill(Skill):
         try:
             cmdargs = ["torsocks", "nc", "-n", "-v", "-z", "-w", "5", ip, port]
             output = run(cmdargs, capture_output=True, text=True)
+            output = output.stdout
         except FileNotFoundError as e:
             output = f"error executing command: {e}"
 
