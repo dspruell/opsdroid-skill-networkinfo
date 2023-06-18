@@ -160,7 +160,7 @@ class NetworkinfoSkill(Skill):
         await message.respond(_monowrap(f"{output}"))
 
     @match_regex(
-        r"portcheck\s+(?P<ip>\S+)\s+(?P<port>\d+))\s*",
+        r"portcheck\s+(?P<ip>\S+)\s+(?P<port>\d+)\s*",
         matching_condition="fullmatch",
     )
     async def check_port_connect(self, message):
