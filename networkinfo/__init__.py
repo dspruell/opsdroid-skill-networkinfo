@@ -170,11 +170,12 @@ class NetworkinfoSkill(Skill):
         port = message.entities["port"]["value"].strip()
 
         logger.debug("Received message: %s", message)
-        logger.debug("Extracted matches: ip=%s, port=%d", ip, port)
+        logger.debug("Extracted matches: ip=%s, port=%s", ip, port)
 
         try:
             cmdargs = ["torsocks", "nc", "-n", "-v", "-z", "-w", "5", ip, port]
             output = run(cmdargs, capture_output=True, text=True)
+            logger.debug("Command for torsocks returned output: %s", output)
             output = output.stdout
         except FileNotFoundError as e:
             output = f"error executing command: {e}"
