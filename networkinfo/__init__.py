@@ -158,3 +158,24 @@ class NetworkinfoSkill(Skill):
             output = f"error executing command: {e}"
 
         await message.respond(_monowrap(f"{output}"))
+
+    @match_regex(
+        r"portcheck\s+(?P<ip>\S+)\s+(?P<port>\d+))\s*",
+        matching_condition="fullmatch",
+    )
+    async def check_port_connect(self, message):
+        """portcheck - Return result of connection test to an IP and port"""
+
+        ip = message.entities["ip"]["value"].strip()
+        port = message.entities["port"]["value"].strip()
+
+        logger.debug("Received message: %s", message)
+        logger.debug("Extracted matches: ip=%s, port=%d", ip, port)
+
+        try:
+            cmdargs = ["torsocks", "nc", "-n", "-v", "-z", "-w", "5", ip, port]
+            output = run(cmdargs, capture_output=True, text=True)
+        except FileNotFoundError as e:
+            output = f"error executing command: {e}"
+
+        await message.respond(_monowrap(f"{output}"))
