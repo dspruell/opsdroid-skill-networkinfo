@@ -15,6 +15,7 @@ CONFIG_SCHEMA = {
 }
 
 DEFAULT_ASN_SERVICE = "cymru"
+DEFAULT_CONNECTION_TIMEOUT = 5
 DEFAULT_IPAPI_KEY = None
 DEFAULT_IPCALC_CMD = "ipcalc-ng"
 
@@ -168,12 +169,25 @@ class NetworkinfoSkill(Skill):
 
         ip = message.entities["ip"]["value"].strip()
         port = message.entities["port"]["value"].strip()
+        timeout = self.config.get(
+            "connection_timeout", DEFAULT_CONNECTION_TIMEOUT
+        )
 
         logger.debug("Received message: %s", message)
         logger.debug("Extracted matches: ip=%s, port=%s", ip, port)
 
         try:
-            cmdargs = ["torsocks", "nc", "-n", "-v", "-z", "-w", "5", ip, port]
+            cmdargs = [
+                "torsocks",
+                "nc",
+                "-n",
+                "-v",
+                "-z",
+                "-w",
+                timeout,
+                ip,
+                port,
+            ]
             output = run(cmdargs, capture_output=True, text=True)
             logger.debug("Command for torsocks returned output: %s", output)
             # Failed connection results in output to stderr, so capture either.

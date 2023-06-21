@@ -10,6 +10,9 @@ support numerous network object lookup tasks.
 
 ## Configuration
 
+- `connection_timeout`: Optional. Timeout (in seconds) for socket connection
+  checks.
+    - Default: Five (5) seconds.
 - `ipapi_key`: Optional. API key for <https://ipapi.co/> service.
     - Default: no key, which defaults to a free account with a limited query
       allowance.
