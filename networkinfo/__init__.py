@@ -169,12 +169,13 @@ class NetworkinfoSkill(Skill):
 
         ip = message.entities["ip"]["value"].strip()
         port = message.entities["port"]["value"].strip()
-        timeout = self.config.get(
-            "connection_timeout", DEFAULT_CONNECTION_TIMEOUT
+        timeout = int(
+            self.config.get("connection_timeout", DEFAULT_CONNECTION_TIMEOUT)
         )
 
         logger.debug("Received message: %s", message)
         logger.debug("Extracted matches: ip=%s, port=%s", ip, port)
+        logger.debug("Settings: timeout=%s", timeout)
 
         try:
             cmdargs = [
