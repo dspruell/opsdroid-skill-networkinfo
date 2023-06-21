@@ -169,7 +169,7 @@ class NetworkinfoSkill(Skill):
 
         ip = message.entities["ip"]["value"].strip()
         port = message.entities["port"]["value"].strip()
-        timeout = int(
+        timeout = str(
             self.config.get("connection_timeout", DEFAULT_CONNECTION_TIMEOUT)
         )
 
