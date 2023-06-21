@@ -189,6 +189,9 @@ class NetworkinfoSkill(Skill):
                 ip,
                 port,
             ]
+            logger.debug(
+                "About to call subprocess.run with cmdargs: %s", cmdargs
+            )
             output = run(cmdargs, capture_output=True, text=True)
             logger.debug("Command for torsocks returned output: %s", output)
             # Failed connection results in output to stderr, so capture either.
