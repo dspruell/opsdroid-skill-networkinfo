@@ -1,4 +1,6 @@
 import logging
+import ssl
+from io import StringIO
 from subprocess import run
 
 import ipapi
@@ -7,6 +9,8 @@ from defang import refang
 from dns.resolver import NXDOMAIN, Resolver
 from opsdroid.matchers import match_regex
 from opsdroid.skill import Skill
+from tabulate import tabulate
+from tls_probe import get_sock_info
 from voluptuous import Optional
 
 CONFIG_SCHEMA = {
@@ -201,7 +205,10 @@ class NetworkinfoSkill(Skill):
 
         await message.respond(_monowrap(f"{output}"))
 
-    @match_regex(r"tls\s+(?P<host>\S+)\s+(?P<port>\d+)\s*", matching_condition="fullmatch")
+    @match_regex(
+        r"tls\s+(?P<host>\S+)\s+(?P<port>\d+)\s*",
+        matching_condition="fullmatch",
+    )
     async def tls_probe(self, message):
         """tls - Return information about a remote TLS service."""
 
@@ -211,12 +218,36 @@ class NetworkinfoSkill(Skill):
         logger.debug("Received message: %s", message)
         logger.debug("Extracted matches: host=%s, port=%s", host, port)
 
+        # try:
+        #     cmdargs = ["torsocks", "tls-probe", "-z", host, port]
+        #     output = run(cmdargs, capture_output=True, text=True)
+        #     # Failed connection results in output to stderr, so capture either.
+        #     output = output.stdout or output.stderr
+        # except FileNotFoundError as e:
+        #     output = f"error executing command: {e}"
         try:
-            cmdargs = ["torsocks", "tls-probe", "-z", host, port]
-            output = run(cmdargs, capture_output=True, text=True)
-            # Failed connection results in output to stderr, so capture either.
-            output = output.stdout or output.stderr
-        except FileNotFoundError as e:
-            output = f"error executing command: {e}"
+            # Default to not validating TLS socket; the objective is to probe
+            # it and get information, not to establish a connection securely,
+            # and the risk of MitM is not a concern.
+            conn_info = get_sock_info((host, port), validate=False)
+        except (ConnectionRefusedError, ssl.SSLError) as e:
+            err = f"Unable to establish SSL/TLS session: {e}"
+            logger.error(err)
+            await message.respond(_monowrap(f"{err}"))
+
+        buf = StringIO()
+        fp = conn_info["cert"].pop("fingerprints")
+        exts = conn_info["cert"].pop("extensions")
+        print("Connection:", file=buf)
+        print(tabulate(conn_info["conn"].items(), tablefmt="plain"), file=buf)
+        print("\nCertificate:", file=buf)
+        print(tabulate(conn_info["cert"].items(), tablefmt="plain"), file=buf)
+        print("\nFingerprints:", file=buf)
+        print(tabulate(fp.items(), tablefmt="plain"), file=buf)
+        print("\nExtensions:", file=buf)
+        print(tabulate(exts.items(), tablefmt="plain"), file=buf)
+
+        output = buf.getvalue()
+        buf.close()
 
         await message.respond(_monowrap(f"{output}"))
