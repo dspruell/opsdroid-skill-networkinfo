@@ -200,3 +200,22 @@ class NetworkinfoSkill(Skill):
             output = f"error executing command: {e}"
 
         await message.respond(_monowrap(f"{output}"))
+
+    @match_regex(r"tls\s+(?P<host>\S+)\s*", matching_condition="fullmatch")
+    async def tls_probe(self, message):
+        """tls - Return information about a remote TLS service."""
+
+        host = message.entities["host"]["value"].strip()
+
+        logger.debug("Received message: %s", message)
+        logger.debug("Extracted matches: host=%s", host)
+
+        try:
+            cmdargs = ["torsocks", "tls-probe", "-z", host]
+            output = run(cmdargs, capture_output=True, text=True)
+            # Failed connection results in output to stderr, so capture either.
+            output = output.stdout or output.stderr
+        except FileNotFoundError as e:
+            output = f"error executing command: {e}"
+
+        await message.respond(_monowrap(f"{output}"))
