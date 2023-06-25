@@ -139,7 +139,7 @@ class NetworkinfoSkill(Skill):
         logger.debug("Received message: %s", message)
         logger.debug("Extracted matches: ip=%s", ip)
 
-        ipinfo = self._lookup_ip_ipapi(ip=ip)
+        ipinfo = await self._lookup_ip_ipapi(ip=ip)
 
         resp = (
             f'Location: [{ipinfo["country_code"]} {ipinfo["country"]} / '
@@ -265,7 +265,7 @@ class NetworkinfoSkill(Skill):
         logger.debug("Received message: %s", message)
 
         # No arguments to receive information for our own IP address
-        ipinfo = self._lookup_ip_ipapi()
+        ipinfo = await self._lookup_ip_ipapi()
 
         resp = (
             f'Location: [{ipinfo["country_code"]} {ipinfo["country"]} / '
