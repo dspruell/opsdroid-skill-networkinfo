@@ -45,6 +45,21 @@ class NetworkinfoSkill(Skill):
     #     )
     #     await message.respond(as_info)
 
+    async def _lookup_ip_ipapi(self, ip=None, output="json"):
+        """Look up IP address information using ipapi API
+
+        If the IP address is None, pass no address to the API and receive a
+        lookup of the requesting client's IP address.
+
+        """
+        ipapi_key = self.config.get("ipapi_key", DEFAULT_IPAPI_KEY)
+        ipinfo = ipapi.location(
+            ip=ip,
+            key=ipapi_key,
+            output="json",
+        )
+        return ipinfo
+
     @match_regex(
         r"asn (?P<ip>(\d{1,3}\.){3}\d{1,3})", matching_condition="fullmatch"
     )
@@ -120,16 +135,11 @@ class NetworkinfoSkill(Skill):
         """ip - Return geoIP information about a requested IP address"""
 
         ip = message.entities["ip"]["value"].strip()
-        ipapi_key = self.config.get("ipapi_key", DEFAULT_IPAPI_KEY)
 
         logger.debug("Received message: %s", message)
         logger.debug("Extracted matches: ip=%s", ip)
 
-        ipinfo = ipapi.location(
-            ip=ip,
-            key=ipapi_key,
-            output="json",
-        )
+        ipinfo = self._lookup_ip_ipapi(ip=ip)
 
         resp = (
             f'Location: [{ipinfo["country_code"]} {ipinfo["country"]} / '
@@ -218,13 +228,6 @@ class NetworkinfoSkill(Skill):
         logger.debug("Received message: %s", message)
         logger.debug("Extracted matches: host=%s, port=%s", host, port)
 
-        # try:
-        #     cmdargs = ["torsocks", "tls-probe", "-z", host, port]
-        #     output = run(cmdargs, capture_output=True, text=True)
-        #     # Failed connection results in output to stderr, so capture either.
-        #     output = output.stdout or output.stderr
-        # except FileNotFoundError as e:
-        #     output = f"error executing command: {e}"
         try:
             # Default to not validating TLS socket; the objective is to probe
             # it and get information, not to establish a connection securely,
@@ -251,3 +254,23 @@ class NetworkinfoSkill(Skill):
         buf.close()
 
         await message.respond(_monowrap(f"{output}"))
+
+    @match_regex(
+        r"sourceip",
+        matching_condition="fullmatch",
+    )
+    async def check_source_ip(self, message):
+        """sourceip - Return the source IP address for an outbound request."""
+
+        logger.debug("Received message: %s", message)
+
+        # No arguments to receive information for our own IP address
+        ipinfo = self._lookup_ip_ipapi()
+
+        resp = (
+            f'Location: [{ipinfo["country_code"]} {ipinfo["country"]} / '
+            f'{ipinfo["region"]} / {ipinfo["city"]}\n'
+            f'ASN:      {ipinfo["asn"]} / {ipinfo["org"]}'
+        )
+
+        await message.respond(_monowrap(f"{resp}"))
