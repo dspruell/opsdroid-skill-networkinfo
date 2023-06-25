@@ -53,10 +53,16 @@ class NetworkinfoSkill(Skill):
 
         """
         ipapi_key = self.config.get("ipapi_key", DEFAULT_IPAPI_KEY)
+        logger.debug(
+            "About to call ipapi API with params: ip=%s, key=%s, output=%s",
+            ip,
+            ipapi_key,
+            output,
+        )
         ipinfo = ipapi.location(
             ip=ip,
             key=ipapi_key,
-            output="json",
+            output=output,
         )
         return ipinfo
 
